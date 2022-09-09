@@ -4,7 +4,8 @@ export const CartContext = createContext({
     isCartOpen: false,
     setIsCartOpen: () => { },
     cartItems: [],
-    addItemToCart: () => { }
+    addItemToCart: () => { },
+    cartCount: 0
 });
 
 // Helper function: 
@@ -51,9 +52,11 @@ const clearCartItem = (cartItems, product) => {
 export const CartProvider = ({ children }) => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
+    const [cartCount, setCartCount] = useState(0);
 
     useEffect(() => {
-        console.log('cartItems::::::', cartItems);
+        const newCartCount = cartItems.reduce((total, cartItem) => total + cartItem.quantity, 0);
+        setCartCount(newCartCount);
     }, [cartItems]);
 
     // Add cart item
@@ -77,7 +80,8 @@ export const CartProvider = ({ children }) => {
         cartItems,
         addItemToCart,
         removeItemFromCart,
-        clearItemfromCart
+        clearItemfromCart,
+        cartCount
     };
 
     return (
