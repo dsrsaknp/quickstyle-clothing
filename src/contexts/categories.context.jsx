@@ -13,19 +13,20 @@ export const CategoriesContext = createContext({
 });
 
 export const CategoriesProvider = ({ children }) => {
-    const [categories, setCategories] = useState({});
-    const value = categories;
+    const [categoriesMap, setCategoriesMap] = useState({});
+    const value = { categoriesMap };
 
-    // Initially run once, to populate the shopdata from json into firestore
+    // # Initially run once, to populate the shopdata from json into firestore
     // useEffect(() => {
     //     addCollectionAndDocuments('categories', SHOP_DATA);
     // }, []);
 
+    // # Fetching categories collection
     useEffect(() => {
         (async function () {
             const categoryMap = await getDocumentsFromCollection();
             console.log(categoryMap);
-            setCategories(categoryMap);
+            setCategoriesMap(categoryMap);
         })();
     }, []);
 
