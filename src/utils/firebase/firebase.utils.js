@@ -33,7 +33,7 @@ const firebaseConfig = {
 };
 
 // # Initialize Firebase app; Create an app instance
-const app = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 
 // # Create a provider instance for auth service
 const provider = new GoogleAuthProvider();   // provider instance needed for individual functionality 
