@@ -11,7 +11,16 @@ import {
     GoogleAuthProvider,
     onAuthStateChanged
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    collection,
+    writeBatch,
+    query,
+    getDocs
+} from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -23,10 +32,10 @@ const firebaseConfig = {
     appId: "1:1098801000543:web:fd6ccbcb7f5c10b9b3ebea"
 };
 
-// Initialize Firebase app; Create an app instance
+// # Initialize Firebase app; Create an app instance
 const app = initializeApp(firebaseConfig);
 
-// Create a provider instance for auth service
+// # Create a provider instance for auth service
 const provider = new GoogleAuthProvider();   // provider instance needed for individual functionality 
 provider.setCustomParameters({
     prompt: "select_account"
@@ -36,8 +45,44 @@ export const auth = getAuth();   // auth service
 export const logInWithGooglePopup = () => signInWithPopup(auth, provider);
 export const logInWithGoogleRedirect = () => signInWithRedirect(auth, provider);
 
-// After getting authenticated using popup, the response/auth response is utilised to get user info. 
+// # After getting authenticated using popup, the response/auth response is utilised to get user info. 
 export const db = getFirestore();
+
+// # Create collection and objects in db
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+    console.log('inside firebase utils');
+    const collectionRef = collection(db, collectionKey);
+    const batch = writeBatch(db);
+
+    objectsToAdd.forEach(object => {
+        console.log('object :', object);
+        const docRef = doc(collectionRef, object.title.toLowerCase());
+        batch.set(docRef, object);
+    });
+
+    await batch.commit();
+    console.log('done');
+}
+
+// # Fetch documents from the given collection key/name
+export const getDocumentsFromCollection = async () => {
+    // get the collection reference
+    const collectionRef = collection(db, 'categories');
+    // generating query ()
+    const q = query(collectionRef);    // returns an object
+    // get collection snapshot
+    const querySnapshot = await getDocs(q);
+    // map the elements into an object and return
+    const categoryMap = querySnapshot.docs.reduce((acc, queryDoc) => {
+        const { title, items } = queryDoc.data();
+        acc[title.toLowerCase()] = items;     // Hash table
+        return acc;
+    }, {})
+    return categoryMap;
+}
+
+
+// # Create user doc in firestore db
 export const createUserDocumentFromAuth = async (userAuth, additionalInformation = {}) => {
     if (!userAuth) return;
 
@@ -46,7 +91,7 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
     console.log('[user doc object created locally]: userDocRef', userDocRef);
 
     // getDoc() : access the locally created doc using this function
-    const userDocSnapshot = await getDoc(userDocRef);
+    const userDocSnapshot = await getDoc(userDocRef);   // one snapshot
     console.log('[Access the locally created user doc object] : getDoc(userDocRef)', userDocSnapshot);
 
     // .exists() : check if the locally created doc exists in firebase db
@@ -71,30 +116,30 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
     return userDocRef;
 }
 
-// sign up using email and Password
+// # Sign up using email and Password
 export const createAuthUserWithEmailAndPassword = async (displayName, email) => {
     if (!displayName || !email) return;
     return await createUserWithEmailAndPassword(auth, displayName, email);
 }
 
-// sign in using email and Password
+// # Sign in using email and Password
 export const logInAuthUserWithEmailAndPassword = async (email, password) => {
     if (!email || !password) return;
     return await signInWithEmailAndPassword(auth, email, password);
 }
 
-// sign out
+// # Sign out
 export const signOutUser = async () => {
     return await signOut(auth);
 };
 
-// auth state change listener
+// # Auth state change listener
 export const onAuthStateChangeListener = async (callback) => {
     return await onAuthStateChanged(auth, callback);
 };
 
 // A LISTENER IS CREATED INTERNALLY BY onAuthStateChanges WITH THE THREE KEY METHODS
-// return await onAuthStateChanged(auth, callback, errorCallback, completeCallback) 
+// return await onAuthStateChanged(auth, callback, errorCallback, completeCallback)
 // {
 //      next: callback,
 //      error: errorCallback,
