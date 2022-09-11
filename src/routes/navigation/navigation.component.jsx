@@ -1,4 +1,4 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { useContext } from 'react';
 
 import { NavigationContainer, LogoContainer, NavLinks, NavLink } from './navigation.styles.jsx';
